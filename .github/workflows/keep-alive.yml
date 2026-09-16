@@ -1,18 +1,16 @@
-name: Keep and Wake Streamlit App
+name: Keep Streamlit App Awake
+
 on:
   schedule:
-    # # Runs every 12 hours (at 00:00 and 12:00 UTC)
-    - cron: '0 0,12 * * *'
+    # Runs every 10 hours
+    - cron: '0 */10 * * *'
+  # Allows manual execution from the Actions tab
   workflow_dispatch:
 
 jobs:
-  wake-app:
+  ping-app:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping and Wake Streamlit
+      - name: Ping Streamlit App
         run: |
-          # Visit the app to log traffic activity.
-          curl -s -L https://urban-tipology-xai.streamlit.app/ > /dev/null
-          
-          # Send the direct command to wake up, in case it was asleep.
-          curl -s -X POST https://urban-tipology-xai.streamlit.app/~/+/wake/
+          curl -s -A "Mozilla/5.0" --max-redirs 0 https://urban-tipology-xai.streamlit.app/ > /dev/null || true

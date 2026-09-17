@@ -12,9 +12,9 @@ jobs:
 
     steps:
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install Playwright
         run: npm install --no-save playwright
@@ -44,7 +44,7 @@ jobs:
               );
 
               console.log('HTTP status:', response?.status());
-              console.log('Final URL:', page.url());
+              console.log('Initial URL:', page.url());
               console.log('Page title:', await page.title());
 
               // Give Streamlit time to establish the session

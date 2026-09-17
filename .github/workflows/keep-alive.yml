@@ -2,15 +2,80 @@ name: Keep Streamlit App Awake
 
 on:
   schedule:
-    # Runs every 10 hours
-    - cron: '0 */10 * * *'
-  # Allows manual execution from the Actions tab
+    # Runs every 6 hours
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
-  ping-app:
+  visit-app:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Streamlit App
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: npm install --no-save playwright
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Visit Streamlit App
         run: |
-          curl -s -A "Mozilla/5.0" --max-redirs 0 https://urban-tipology-xai.streamlit.app/ > /dev/null || true
+          node <<'EOF'
+          const { chromium } = require('playwright');
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true
+            });
+
+            const page = await browser.newPage();
+
+            try {
+              const response = await page.goto(
+                'https://urban-tipology-xai.streamlit.app/',
+                {
+                  waitUntil: 'domcontentloaded',
+                  timeout: 120000
+                }
+              );
+
+              console.log('HTTP status:', response?.status());
+              console.log('Final URL:', page.url());
+              console.log('Page title:', await page.title());
+
+              // Give Streamlit time to establish the session
+              // and finish loading the application.
+              await page.waitForTimeout(15000);
+
+              console.log('Final URL after waiting:', page.url());
+
+              // Check that we are no longer stuck in the login flow.
+              if (page.url().includes('/-/login')) {
+                throw new Error(
+                  'Streamlit session did not complete: still on /-/login'
+                );
+              }
+
+              // Check that the page contains actual content.
+              const bodyText = await page.locator('body').innerText();
+
+              console.log(
+                'Page text preview:',
+                bodyText.substring(0, 1000)
+              );
+
+              if (!bodyText.trim()) {
+                throw new Error('Streamlit page appears to be empty');
+              }
+
+              console.log('Streamlit app successfully visited.');
+
+            } finally {
+              await browser.close();
+            }
+          })();
+          EOF

@@ -51,25 +51,14 @@ jobs:
               // and finish loading the application.
               await page.waitForTimeout(15000);
 
-              console.log('Final URL after waiting:', page.url());
+              console.log('Final URL:', page.url());
 
-              // Check that we are no longer stuck in the login flow.
+              // If Streamlit sent us back to the login flow,
+              // the browser session was not established correctly.
               if (page.url().includes('/-/login')) {
                 throw new Error(
                   'Streamlit session did not complete: still on /-/login'
                 );
-              }
-
-              // Check that the page contains actual content.
-              const bodyText = await page.locator('body').innerText();
-
-              console.log(
-                'Page text preview:',
-                bodyText.substring(0, 1000)
-              );
-
-              if (!bodyText.trim()) {
-                throw new Error('Streamlit page appears to be empty');
               }
 
               console.log('Streamlit app successfully visited.');

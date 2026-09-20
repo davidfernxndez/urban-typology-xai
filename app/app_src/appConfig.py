@@ -90,6 +90,6 @@ class AppConfig:
     #####################
     NAME: str = "David Fernández Martínez"
     GITHUB_LINK = "https://github.com/davidfernxndez"
-    LINKEDIN_LINK = "https://www.linkedin.com/in/david-fern%C3%A1ndez-mart%C3%ADnez/"
+    LINKEDIN_LINK = "https://www.linkedin.com/in/david-fernxndez-martinez/"
 
 config = AppConfig()
